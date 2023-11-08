@@ -31,15 +31,46 @@ public sealed class Trainer
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine(FiggleFonts.Standard.Render("Vocabulary Trainer"));
         Console.WriteLine($"Starting a new training cycle with {CYCLE_COUNT} tries ...");
-        var alreadyAsked = new bool[this._vocabularyItems.Length];
+        var alreadyAsked = new bool[_vocabularyItems.Length];
+        
         for (var i = 0; i < CYCLE_COUNT; i++)
         {
-            // TODO
-            Console.ResetColor();
+            int index = PickNextWord(alreadyAsked);
+            VocabularyItem vocab = _vocabularyItems[index];
+            
+            PrintVocab(vocab);
+            
+            string answer = Console.ReadLine()!;
+            bool isRight = vocab.TestTranslation(answer);
+            
+            UserAnwer(vocab, isRight);
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+        
         }
         Console.WriteLine();
     }
 
+
+    private void UserAnwer(VocabularyItem vocab, bool isRight)
+    {
+        if (isRight)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("OK!");
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"No, {vocab.NativeWord} = {vocab.Translation}");
+        }
+    }
+
+    private void PrintVocab(VocabularyItem vocab)
+    {
+        string spaces = new string(' ', 10 - vocab.NativeWord.Length);
+        Console.Write(vocab.NativeWord + spaces + "= ");
+        Console.ResetColor();
+    }
     /// <summary>
     ///     Prints training statistics to the terminal.
     /// </summary>
@@ -69,7 +100,17 @@ public sealed class Trainer
     /// <returns>Index of next word to use</returns>
     private int PickNextWord(bool[] alreadyAsked)
     {
-        // TODO
+        Random random = new Random();
+        for (int i = 0; i < alreadyAsked.Length + 1000; i++)
+        {
+            int voc = random.Next(0, alreadyAsked.Length);
+            if (!alreadyAsked[voc])
+            {
+                alreadyAsked[voc] = true;
+                return voc;
+            }
+                
+        }
         return -1;
     }
 
@@ -78,7 +119,16 @@ public sealed class Trainer
     /// </summary>
     private void Sort()
     {
-        // TODO
+        for(int i = 0; i < _vocabularyItems.Length; i++) 
+        {
+            for(int j = i + 1; j < _vocabularyItems.Length; j++)
+            {
+                if (_vocabularyItems[i].CompareTo(_vocabularyItems[j]) < 0)
+                {
+                    (_vocabularyItems[i], _vocabularyItems[j]) = (_vocabularyItems[j], _vocabularyItems[i]);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -88,7 +138,13 @@ public sealed class Trainer
     /// <returns>A <see cref="VocabularyItem"/> for each (valid) word</returns>
     private static VocabularyItem[] CreateVocabularyItems(string[][] wordsAndTranslations)
     {
-        // TODO
-        return Array.Empty<VocabularyItem>();
+        VocabularyItem[] vocabItems = new VocabularyItem[wordsAndTranslations.GetLength(0)];
+
+        for (int i = 0; i < vocabItems.GetLength(0); i++)
+        {
+            vocabItems[i] = new(wordsAndTranslations[i][0], wordsAndTranslations[i][1]);
+        }
+        
+        return vocabItems;
     }
 }
